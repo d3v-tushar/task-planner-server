@@ -24,25 +24,45 @@ const run = async() =>{
         });
 
         app.get('/mytask', async(req, res) =>{
-            let query = {};
-            if(req.query.email){
-                query = req.query.email;
-            }
+            const email = req.query.email;
+            const query = {email: req.query.email}
             const cursor = taskCollection.find(query);
             const mytask = await cursor.toArray();
             res.send(mytask);
         });
 
-         //API for Editing Task
+        app.get('/mytask/status', async(req, res) =>{
+            const email = req.query.email;
+            const query = {email: req.query.email, completed: true}
+            const cursor = taskCollection.find(query);
+            const mytask = await cursor.toArray();
+            res.send(mytask);
+        });
+
+    //API for Editing Task
     app.put('/mytask/:id', async(req, res) =>{
         const id = req.params.id;
         const filter = {_id: ObjectId(id)};
         const options = { upsert: true };
-        const message = req.body;
+        const update = req.body;
         const updateTask = {$set: {
-            message: message.message
+            discription: update.discription
         }}
         const result = await taskCollection.updateOne(filter, updateTask, options);
+        res.send(result);
+    });
+
+    //Updating Task Status
+    app.patch('/mytask/:id', async(req, res)=>{
+        const id = req.params.id;
+        const status = req.body.completed;
+        const query = {_id: ObjectId(id)};
+        const updatedDoc = {
+            $set:{
+                completed: status
+            }
+        }
+        const result = await taskCollection.updateOne(query, updatedDoc);
         res.send(result);
     });
 
